@@ -25,7 +25,7 @@ void loop() {
   int output = digitalRead(2);
   if(output != previousOutput)
   {
-    output = previousOutput;
+    previousOutput = output;
     flow++;
   }
   delay(analogRead(A0));
