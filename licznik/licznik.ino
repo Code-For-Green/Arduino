@@ -20,17 +20,26 @@ void setup() {
   flow = 0;
   Serial.begin(9600);
   pinMode(2, INPUT);
+  for(int i = 100; i < 0; i--)
+  {
+    delay(100);
+    lcd.clear();
+    lcd.setCursor(0,0);
+    lcd.print(i);
+  }
 }
 
 void loop() {
   int del = analogRead(A0);
-  
-  //Co sekundę
+
+  //Co minutę
   if(millis() >= time_now2 + period2){
     time_now2 += period2;
     flowMinutes = flow_m;
     flow_m = 0;
   }
+
+  //Co sekundę
   if(millis() >= time_now + period){
         time_now += period;
         Serial.println(flow);
