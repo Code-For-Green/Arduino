@@ -3,6 +3,8 @@
 const char* ssid     = "ZSPWrzesnia_nau";         // The SSID (name) of the Wi-Fi network you want to connect to
 const char* password = "eSzkola78()";     // The password of the Wi-Fi network
 
+WiFiClient client;
+
 void setup() {
   Serial.begin(115200);         // Start the Serial communication to send messages to the computer
   delay(10);
@@ -25,3 +27,16 @@ void setup() {
 }
 
 void loop() { }
+
+void SendData(const char* request)
+{
+ if (client.connect("www.xxxxx.xxx",80)) { // REPLACE WITH YOUR SERVER ADDRESS
+ client.println("GET add2.php HTTP/1.1"); 
+ client.println("Host: xxx.xxx.xxx"); // SERVER ADDRESS HERE TOO
+ client.println("Content-Type: application/x-www-form-urlencoded"); 
+ client.print("Content-Length: "); 
+ client.println(data.length()); 
+ client.println(); 
+ client.print(data); 
+ } 
+}
