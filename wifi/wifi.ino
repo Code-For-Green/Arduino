@@ -3,6 +3,11 @@
 const char* ssid     = "ZSPWrzesnia_nau";         // The SSID (name) of the Wi-Fi network you want to connect to
 const char* password = "eSzkola78()";     // The password of the Wi-Fi network
 
+const char* username = "249391552_0000017";
+const char* password = "1CsbP8pQd4T@";
+
+const char* server_address = "serwer1727017.home.pl";
+
 WiFiClient client;
 
 void setup() {
@@ -28,15 +33,20 @@ void setup() {
 
 void loop() { }
 
-void SendData(const char* request)
+void SendData(int flow)
 {
- if (client.connect("www.xxxxx.xxx",80)) { // REPLACE WITH YOUR SERVER ADDRESS
- client.println("GET add2.php HTTP/1.1"); 
- client.println("Host: xxx.xxx.xxx"); // SERVER ADDRESS HERE TOO
- client.println("Content-Type: application/x-www-form-urlencoded"); 
- client.print("Content-Length: "); 
- client.println(data.length()); 
- client.println(); 
- client.print(data); 
- } 
+  if (client.connect(server_address ,80)) { // REPLACE WITH YOUR SERVER ADDRESS
+    client.print("GET add.php?user="); 
+    client.print(username);
+    client.print("&pass");
+    client.print(password);
+    client.print("&flow");
+    client.print(flow);
+    client.print(" HTTP/1.1");
+    client.println()
+    client.print("Host: "); // SERVER ADDRESS HERE TOO
+    client.println(server_address);;
+    client.println("Connection: close");
+    client.println();
+  } 
 }
