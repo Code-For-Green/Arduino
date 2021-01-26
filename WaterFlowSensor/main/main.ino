@@ -21,13 +21,14 @@ const char* server_address = "codeforgreen.zspwrzesnia.pl";
 const char* username = "249391552_0000017";
 const char* password = "1CsbP8pQd4T@";
 
-int period = 1000;
+int period = 1000; // co sekunde
+//int period = 1000 * 10; // co 10 sekund
 unsigned long time_now = 0;
 int previousOutput;
 int time_delay;
 
 int flow;
-int minute_data[60] = { };
+int minute_data[10] = { };
 int avalible_array = 0;
 
 void setup()
@@ -50,20 +51,22 @@ void loop()
       {
         sum += data;
       }
-      if(avalible_array == 60)
+      if(avalible_array == 10)
       {
         avalible_array = 0;
+        SendData(sum/1000);
+        sum = 0;
       }
       minute_data[avalible_array] = flow;
       avalible_array++;
       time_now += period;
       //LCDPrint(500);
-      SendData(500);
       flow = 0;
   }
 
   //Obliczanie ticków
-  int output = digitalRead(2);
+  int output = digitalRead(2); // PODLACZ POD D4
+  //Serial.println(output);
   if(output != previousOutput)
   {
     previousOutput = output;
@@ -72,7 +75,7 @@ void loop()
   delay(time_delay);
 }
 
-void LCDPrint(int sum)
+void LCDPrint(float sum)
 {
       /*lcd.clear();
       lcd.setCursor(0,0);
@@ -96,7 +99,7 @@ void ConnectToServer()
     int i = 0;
     while (WiFi.status() != WL_CONNECTED) { // Wait for the Wi-Fi to connect
         delay(1000);
-        Serial.print(++i); Serial.print(' ');
+        //Serial.print(++i); Serial.print(' ');
     }
 
     Serial.println('\n');
@@ -105,10 +108,11 @@ void ConnectToServer()
     Serial.println(WiFi.localIP());
 }
 
-void SendData(int flow)
+void SendData(float flow)
 {
   HTTPClient http;  //Declare an object of class HTTPClient
- 
+
+  Serial.println("Sending flow: " + String(flow));
     http.begin("http://codeforgreen.zspwrzesnia.pl/woda/public/api/add.php?flow=" + String(flow));  //Specify request destination
     int httpCode = http.GET();                                  //Send the request
  
