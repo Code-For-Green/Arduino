@@ -1,13 +1,23 @@
-#include "WaterFlowSensor.h"
+
+
+// LCD jest wykomentowane bo nie dziala jak nie jest podlaczone
+
+
+
+
+#include <Wire.h>   // standardowa biblioteka Arduino
+//#include <LiquidCrystal_I2C.h> // dolaczenie pobranej biblioteki I2C dla LCD
+#include <ESP8266WiFi.h>
+#include <ESP8266HTTPClient.h>
 
 #define BAUDRATE 115200
 #define SSID "ZSPWrzesnia_nau"
 #define PASSWORD "eSzkola78()"
 
-LiquidCrystal_I2C lcd(0x27, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE); 
+//LiquidCrystal_I2C lcd(0x27, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE); 
 WiFiClient client;
 
-const char* server_address = "serwer1727017.home.pl";
+const char* server_address = "codeforgreen.zspwrzesnia.pl";
 const char* username = "249391552_0000017";
 const char* password = "1CsbP8pQd4T@";
 
@@ -47,7 +57,8 @@ void loop()
       minute_data[avalible_array] = flow;
       avalible_array++;
       time_now += period;
-      LCDPrint();
+      //LCDPrint(500);
+      SendData(500);
       flow = 0;
   }
 
@@ -61,9 +72,9 @@ void loop()
   delay(time_delay);
 }
 
-void LCDPrint()
+void LCDPrint(int sum)
 {
-      lcd.clear();
+      /*lcd.clear();
       lcd.setCursor(0,0);
       lcd.print("Flow: ");
       lcd.print(flow);
@@ -72,7 +83,7 @@ void LCDPrint()
       lcd.print("/m");
       lcd.setCursor(0,1);
       lcd.print("Delay: ");
-      lcd.print(time_delay);
+      lcd.print(time_delay);*/
 }
 
 void ConnectToServer()
@@ -96,18 +107,20 @@ void ConnectToServer()
 
 void SendData(int flow)
 {
-  if (client.connect(server_address ,80)) { // REPLACE WITH YOUR SERVER ADDRESS
-    client.print("GET add.php?user="); 
-    client.print(username);
-    client.print("&pass");
-    client.print(password);
-    client.print("&flow");
-    client.print(flow);
-    client.print(" HTTP/1.1");
-    client.println();
-    client.print("Host: "); // SERVER ADDRESS HERE TOO
-    client.println(server_address);;
-    client.println("Connection: close");
-    client.println();
-  } 
+  HTTPClient http;  //Declare an object of class HTTPClient
+ 
+    http.begin("http://codeforgreen.zspwrzesnia.pl/woda/public/api/add.php?flow=" + String(flow));  //Specify request destination
+    int httpCode = http.GET();                                  //Send the request
+ 
+    if (httpCode > 0) { //Check the returning code
+ 
+      String payload = http.getString();   //Get the request response payload
+      Serial.println(payload);             //Print the response payload
+ 
+    } else {
+      Serial.println("Error: ");
+      Serial.println(httpCode);
+    }
+ 
+    http.end();   //Close connection
 }
