@@ -1,23 +1,34 @@
-#include "WaterFlowSensor.h"
+
+
+// LCD jest wykomentowane bo nie dziala jak nie jest podlaczone
+
+
+
+
+#include <Wire.h>   // standardowa biblioteka Arduino
+//#include <LiquidCrystal_I2C.h> // dolaczenie pobranej biblioteki I2C dla LCD
+#include <ESP8266WiFi.h>
+#include <ESP8266HTTPClient.h>
 
 #define BAUDRATE 115200
 #define SSID "ZSPWrzesnia_nau"
 #define PASSWORD "eSzkola78()"
 
-LiquidCrystal_I2C lcd(0x27, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE); 
+//LiquidCrystal_I2C lcd(0x27, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE); 
 WiFiClient client;
 
-const char* server_address = "serwer1727017.home.pl";
+const char* server_address = "codeforgreen.zspwrzesnia.pl";
 const char* username = "249391552_0000017";
 const char* password = "1CsbP8pQd4T@";
 
-int period = 1000;
+int period = 1000; // co sekunde
+//int period = 1000 * 10; // co 10 sekund
 unsigned long time_now = 0;
 int previousOutput;
 int time_delay;
 
 int flow;
-int minute_data[60] = { };
+int minute_data[10] = { };
 int avalible_array = 0;
 
 void setup()
@@ -40,19 +51,22 @@ void loop()
       {
         sum += data;
       }
-      if(avalible_array == 60)
+      if(avalible_array == 10)
       {
         avalible_array = 0;
+        SendData(sum/1000);
+        sum = 0;
       }
       minute_data[avalible_array] = flow;
       avalible_array++;
       time_now += period;
-      LCDPrint();
+      //LCDPrint(500);
       flow = 0;
   }
 
   //Obliczanie ticków
-  int output = digitalRead(2);
+  int output = digitalRead(2); // PODLACZ POD D4
+  //Serial.println(output);
   if(output != previousOutput)
   {
     previousOutput = output;
@@ -61,9 +75,9 @@ void loop()
   delay(time_delay);
 }
 
-void LCDPrint()
+void LCDPrint(float sum)
 {
-      lcd.clear();
+      /*lcd.clear();
       lcd.setCursor(0,0);
       lcd.print("Flow: ");
       lcd.print(flow);
@@ -72,7 +86,7 @@ void LCDPrint()
       lcd.print("/m");
       lcd.setCursor(0,1);
       lcd.print("Delay: ");
-      lcd.print(time_delay);
+      lcd.print(time_delay);*/
 }
 
 void ConnectToServer()
@@ -85,7 +99,7 @@ void ConnectToServer()
     int i = 0;
     while (WiFi.status() != WL_CONNECTED) { // Wait for the Wi-Fi to connect
         delay(1000);
-        Serial.print(++i); Serial.print(' ');
+        //Serial.print(++i); Serial.print(' ');
     }
 
     Serial.println('\n');
@@ -94,20 +108,23 @@ void ConnectToServer()
     Serial.println(WiFi.localIP());
 }
 
-void SendData(int flow)
+void SendData(float flow)
 {
-  if (client.connect(server_address ,80)) { // REPLACE WITH YOUR SERVER ADDRESS
-    client.print("GET add.php?user="); 
-    client.print(username);
-    client.print("&pass");
-    client.print(password);
-    client.print("&flow");
-    client.print(flow);
-    client.print(" HTTP/1.1");
-    client.println();
-    client.print("Host: "); // SERVER ADDRESS HERE TOO
-    client.println(server_address);;
-    client.println("Connection: close");
-    client.println();
-  } 
+  HTTPClient http;  //Declare an object of class HTTPClient
+
+  Serial.println("Sending flow: " + String(flow));
+    http.begin("http://codeforgreen.zspwrzesnia.pl/woda/public/api/add.php?flow=" + String(flow));  //Specify request destination
+    int httpCode = http.GET();                                  //Send the request
+ 
+    if (httpCode > 0) { //Check the returning code
+ 
+      String payload = http.getString();   //Get the request response payload
+      Serial.println(payload);             //Print the response payload
+ 
+    } else {
+      Serial.println("Error: ");
+      Serial.println(httpCode);
+    }
+ 
+    http.end();   //Close connection
 }
